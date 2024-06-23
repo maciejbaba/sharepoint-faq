@@ -2,7 +2,7 @@
   "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
   "solution": {
     "name": "sharepoint-faq-client-side-solution",
-    "id": "d0225223-7b55-45fa-817f-46f9231fd309",
+    "id": "abdcc7e8-706b-423b-b359-07e2efac96db",
     "version": "1.0.0.0",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
@@ -29,7 +29,7 @@
       {
         "title": "sharepoint-faq Feature",
         "description": "The feature that activates elements of the sharepoint-faq solution.",
-        "id": "ce99d3ba-f92d-410b-b1d9-75109d88a97e",
+        "id": "6c4100d4-16d2-4836-b651-24b4976118c6",
         "version": "1.0.0.0"
       }
     ]

@@ -1,100 +1,124 @@
-import * as React from 'react';
-import * as ReactDom from 'react-dom';
-import { Version } from '@microsoft/sp-core-library';
+import { Version } from "@microsoft/sp-core-library";
+import { BaseClientSideWebPart } from "@microsoft/sp-webpart-base";
 import {
-  type IPropertyPaneConfiguration,
-  PropertyPaneTextField
-} from '@microsoft/sp-property-pane';
-import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
-import { IReadonlyTheme } from '@microsoft/sp-component-base';
-
-import * as strings from 'FaqWebPartStrings';
-import Faq from './components/Faq';
-import { IFaqProps } from './components/IFaqProps';
+  IPropertyPaneConfiguration,
+  PropertyPaneTextField,
+} from "@microsoft/sp-property-pane";
 
 export interface IFaqWebPartProps {
-  description: string;
+  question1: string;
+  answer1: string;
+  question2: string;
+  answer2: string;
+  question3: string;
+  answer3: string;
 }
 
 export default class FaqWebPart extends BaseClientSideWebPart<IFaqWebPartProps> {
-
-  private _isDarkTheme: boolean = false;
-  private _environmentMessage: string = '';
-
   public render(): void {
-    const element: React.ReactElement<IFaqProps> = React.createElement(
-      Faq,
-      {
-        description: this.properties.description,
-        isDarkTheme: this._isDarkTheme,
-        environmentMessage: this._environmentMessage,
-        hasTeamsContext: !!this.context.sdks.microsoftTeams,
-        userDisplayName: this.context.pageContext.user.displayName
-      }
-    );
+    this.domElement.innerHTML = `
+      <style>
+        .faq-container {
+          font-family: Arial, sans-serif;
+          margin: 20px;
+        }
+        .faq-item {
+          margin-bottom: 10px;
+        }
+        .faq-question {
+          font-weight: bold;
+          cursor: pointer;
+          margin-bottom: 5px;
+        }
+        .faq-answer {
+          display: none;
+          padding-left: 20px;
+        }
+        .search-container {
+          margin-bottom: 20px;
+        }
+        .search-input {
+          width: 100%;
+          padding: 10px;
+          font-size: 16px;
+        }
+      </style>
+      <div class="search-container">
+        <input type="text" class="search-input" placeholder="Search..." />
+      </div>
+      <div class="faq-container">
+        ${this.renderFaqItem(
+          this.properties.question1,
+          this.properties.answer1
+        )}
+        ${this.renderFaqItem(
+          this.properties.question2,
+          this.properties.answer2
+        )}
+        ${this.renderFaqItem(
+          this.properties.question3,
+          this.properties.answer3
+        )}
+      </div>
+    `;
 
-    ReactDom.render(element, this.domElement);
+    this.addEventListeners();
+    this.addSearchListener();
   }
 
-  protected onInit(): Promise<void> {
-    return this._getEnvironmentMessage().then(message => {
-      this._environmentMessage = message;
+  private addSearchListener(): void {
+    const searchInput = this.domElement.querySelector(
+      ".search-input"
+    ) as HTMLInputElement;
+    searchInput.addEventListener("input", () => {
+      const searchText = searchInput.value.toLowerCase();
+      console.log(searchText);
+      const faqItems =
+        this.domElement.querySelectorAll<HTMLElement>(".faq-item");
+      faqItems.forEach((faqItem) => {
+        const question = faqItem.querySelector(".faq-question") as HTMLElement;
+        const answer = faqItem.querySelector(".faq-answer") as HTMLElement;
+        if (
+          question.textContent.toLowerCase().indexOf(searchText) !== -1 ||
+          answer.textContent.toLowerCase().indexOf(searchText) !== -1
+        ) {
+          faqItem.style.display = "block";
+        } else {
+          faqItem.style.display = "none";
+        }
+      });
     });
   }
 
-
-
-  private _getEnvironmentMessage(): Promise<string> {
-    if (!!this.context.sdks.microsoftTeams) { // running in Teams, office.com or Outlook
-      return this.context.sdks.microsoftTeams.teamsJs.app.getContext()
-        .then(context => {
-          let environmentMessage: string = '';
-          switch (context.app.host.name) {
-            case 'Office': // running in Office
-              environmentMessage = this.context.isServedFromLocalhost ? strings.AppLocalEnvironmentOffice : strings.AppOfficeEnvironment;
-              break;
-            case 'Outlook': // running in Outlook
-              environmentMessage = this.context.isServedFromLocalhost ? strings.AppLocalEnvironmentOutlook : strings.AppOutlookEnvironment;
-              break;
-            case 'Teams': // running in Teams
-            case 'TeamsModern':
-              environmentMessage = this.context.isServedFromLocalhost ? strings.AppLocalEnvironmentTeams : strings.AppTeamsTabEnvironment;
-              break;
-            default:
-              environmentMessage = strings.UnknownEnvironment;
-          }
-
-          return environmentMessage;
-        });
-    }
-
-    return Promise.resolve(this.context.isServedFromLocalhost ? strings.AppLocalEnvironmentSharePoint : strings.AppSharePointEnvironment);
+  private renderFaqItem(question: string, answer: string): string {
+    return `
+      <div class="faq-item">
+        <div class="faq-question">${question}</div>
+        <div class="faq-answer">${answer}</div>
+      </div>
+    `;
   }
 
-  protected onThemeChanged(currentTheme: IReadonlyTheme | undefined): void {
-    if (!currentTheme) {
-      return;
-    }
-
-    this._isDarkTheme = !!currentTheme.isInverted;
-    const {
-      semanticColors
-    } = currentTheme;
-
-    if (semanticColors) {
-      this.domElement.style.setProperty('--bodyText', semanticColors.bodyText || null);
-      this.domElement.style.setProperty('--link', semanticColors.link || null);
-      this.domElement.style.setProperty('--linkHovered', semanticColors.linkHovered || null);
-    }
-
+  private addEventListeners(): void {
+    const questions = this.domElement.querySelectorAll(".faq-question");
+    questions.forEach((question) => {
+      question.addEventListener("click", () => {
+        const answer = question.nextElementSibling as HTMLElement;
+        if (answer.style.display === "none" || answer.style.display === "") {
+          answer.style.display = "block";
+        } else {
+          answer.style.display = "none";
+        }
+      });
+    });
   }
 
-  protected onDispose(): void {
-    ReactDom.unmountComponentAtNode(this.domElement);
+  protected onInit(): Promise<void> {
+    return super.onInit();
   }
 
   protected get dataVersion(): Version {
-    return Version.parse('1.0');
+    return Version.parse("1.0");
   }
 
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
@@ -102,20 +126,48 @@ export default class FaqWebPart extends BaseClientSideWebPart<IFaqWebPartProps> 
       pages: [
         {
           header: {
-            description: strings.PropertyPaneDescription
+            description: "Configure your FAQ items",
           },
           groups: [
             {
-              groupName: strings.BasicGroupName,
+              groupName: "FAQ Item 1",
               groupFields: [
-                PropertyPaneTextField('description', {
-                  label: strings.DescriptionFieldLabel
-                })
-              ]
-            }
-          ]
-        }
-      ]
+                PropertyPaneTextField("question1", {
+                  label: "Question 1",
+                }),
+                PropertyPaneTextField("answer1", {
+                  label: "Answer 1",
+                  multiline: true,
+                }),
+              ],
+            },
+            {
+              groupName: "FAQ Item 2",
+              groupFields: [
+                PropertyPaneTextField("question2", {
+                  label: "Question 2",
+                }),
+                PropertyPaneTextField("answer2", {
+                  label: "Answer 2",
+                  multiline: true,
+                }),
+              ],
+            },
+            {
+              groupName: "FAQ Item 3",
+              groupFields: [
+                PropertyPaneTextField("question3", {
+                  label: "Question 3",
+                }),
+                PropertyPaneTextField("answer3", {
+                  label: "Answer 3",
+                  multiline: true,
+                }),
+              ],
+            },
+          ],
+        },
+      ],
     };
   }
 }

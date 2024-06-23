@@ -1,6 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/spfx/client-side-web-part-manifest.schema.json",
-  "id": "f031bc94-a82c-4d23-a6b4-b40211e34f86",
+  "id": "e1e33cfd-9d4b-42b9-832d-476c9b56d19b",
   "alias": "FaqWebPart",
   "componentType": "WebPart",
 
@@ -12,17 +12,30 @@
   // Components that allow authors to embed arbitrary script code should set this to true.
   // https://support.office.com/en-us/article/Turn-scripting-capabilities-on-or-off-1f2c515f-5d7e-448a-9fd7-835da935584f
   "requiresCustomScript": false,
-  "supportedHosts": ["SharePointWebPart", "TeamsPersonalApp", "TeamsTab", "SharePointFullPage"],
+  "supportedHosts": [
+    "SharePointWebPart",
+    "TeamsPersonalApp",
+    "TeamsTab",
+    "SharePointFullPage"
+  ],
   "supportsThemeVariants": true,
 
-  "preconfiguredEntries": [{
-    "groupId": "5c03119e-3074-46fd-976b-c60198311f70", // Advanced
-    "group": { "default": "Advanced" },
-    "title": { "default": "faq" },
-    "description": { "default": "faq description" },
-    "officeFabricIconFontName": "Page",
-    "properties": {
-      "description": "faq"
+  "preconfiguredEntries": [
+    {
+      "groupId": "5c03119e-3074-46fd-976b-c60198311f70",
+      "group": { "default": "Advanced" },
+      "title": { "default": "faq" },
+      "description": { "default": "faq description" },
+      "officeFabricIconFontName": "Page",
+      "properties": {
+        "description": "FAQ Items",
+        "question1": "Wie?",
+        "answer1": "Wie?",
+        "question2": "What was the soup?",
+        "answer2": "Good, the soup was good too.",
+        "question3": "You sus?",
+        "answer3": "Yes, you sus."
+      }
     }
-  }]
+  ]
 }
