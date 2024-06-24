@@ -1,4 +1,4 @@
-import { Version } from "@microsoft/sp-core-library";
+import { Version, Log } from "@microsoft/sp-core-library";
 import { BaseClientSideWebPart } from "@microsoft/sp-webpart-base";
 import {
   IPropertyPaneConfiguration,
@@ -62,7 +62,15 @@ export default class FaqWebPart extends BaseClientSideWebPart<IFaqWebPartProps> 
       </div>
     `;
 
+    // so basically every 500ms we want to re-render the web part
+    // if this is not done, the web part will not be updated
+    // because for some reason the event parts do not cause rerender
+    setInterval(() => {
+      this.render();
+    }, 500);
+
     this.addEventListeners();
+    console.log("FAQ web part rendered");
     this.addSearchListener();
   }
 
@@ -70,24 +78,43 @@ export default class FaqWebPart extends BaseClientSideWebPart<IFaqWebPartProps> 
     const searchInput = this.domElement.querySelector(
       ".search-input"
     ) as HTMLInputElement;
-    searchInput.addEventListener("input", () => {
-      const searchText = searchInput.value.toLowerCase();
-      console.log(searchText);
-      const faqItems =
-        this.domElement.querySelectorAll<HTMLElement>(".faq-item");
-      faqItems.forEach((faqItem) => {
-        const question = faqItem.querySelector(".faq-question") as HTMLElement;
-        const answer = faqItem.querySelector(".faq-answer") as HTMLElement;
-        if (
-          question.textContent.toLowerCase().indexOf(searchText) !== -1 ||
-          answer.textContent.toLowerCase().indexOf(searchText) !== -1
-        ) {
-          faqItem.style.display = "block";
-        } else {
-          faqItem.style.display = "none";
-        }
+
+    if (searchInput) {
+      Log.info("Search", "Search input found", this.context.serviceScope);
+      searchInput.addEventListener("input", () => {
+        const searchText = searchInput.value.toLowerCase();
+        Log.info("Search Text", searchText, this.context.serviceScope);
+        const faqItems =
+          this.domElement.querySelectorAll<HTMLElement>(".faq-item");
+        faqItems.forEach((faqItem) => {
+          if (!searchText) {
+            faqItem.style.display = "block";
+            return;
+          }
+
+          const question = faqItem.querySelector(
+            ".faq-question"
+          ) as HTMLElement;
+          const answer = faqItem.querySelector(".faq-answer") as HTMLElement;
+
+          if (!question.textContent || !answer.textContent) {
+            console.error("Question or answer not found");
+            return;
+          }
+
+          if (
+            question.textContent.toLowerCase().indexOf(searchText) !== -1 ||
+            answer.textContent.toLowerCase().indexOf(searchText) !== -1
+          ) {
+            faqItem.style.display = "block";
+          } else {
+            faqItem.style.display = "none";
+          }
+        });
       });
-    });
+    } else {
+      console.error("Search input not found");
+    }
   }
 
   private renderFaqItem(question: string, answer: string): string {
