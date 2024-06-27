@@ -62,17 +62,30 @@ export default class FaqWebPart extends BaseClientSideWebPart<IFaqWebPartProps> 
       </div>
     `;
 
-    // so basically every 500ms we want to re-render the web part
-    // if this is not done, the web part will not be updated
-    // because for some reason the event parts do not cause rerender
-    setInterval(() => {
-      this.render();
-    }, 500);
+    // setInterval(() => {
+    //   const searchInput = this.domElement.querySelector(
+    //     ".search-input"
+    //   ) as HTMLElement;
+
+    //   if (searchInput) {
+    //     const content = searchInput.textContent;
+
+    //     if (content === "") {
+    //       searchInput.textContent = "";
+    //     }
+    //   }
+    // }, 1000);
 
     this.addEventListeners();
-    console.log("FAQ web part rendered");
     this.addSearchListener();
   }
+
+  // private setDisplayOnAllFaqItems(): void {
+  //   const faqItems = this.domElement.querySelectorAll(".faq-item");
+  //   faqItems.forEach((faqItem) => {
+  //     faqItem.style.display = "block";
+  //   });
+  // }
 
   private addSearchListener(): void {
     const searchInput = this.domElement.querySelector(
@@ -80,10 +93,18 @@ export default class FaqWebPart extends BaseClientSideWebPart<IFaqWebPartProps> 
     ) as HTMLInputElement;
 
     if (searchInput) {
-      Log.info("Search", "Search input found", this.context.serviceScope);
-      searchInput.addEventListener("input", () => {
-        const searchText = searchInput.value.toLowerCase();
-        Log.info("Search Text", searchText, this.context.serviceScope);
+      searchInput.addEventListener("change", () => {
+        const searchValue = searchInput.value;
+        if (!searchValue) {
+          const faqItems =
+            this.domElement.querySelectorAll<HTMLElement>(".faq-item");
+          faqItems.forEach((faqItem) => {
+            faqItem.style.display = "block";
+          });
+          return;
+        }
+
+        const searchText = searchValue.toLowerCase();
         const faqItems =
           this.domElement.querySelectorAll<HTMLElement>(".faq-item");
         faqItems.forEach((faqItem) => {
